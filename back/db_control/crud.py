@@ -1,4 +1,6 @@
 from sqlalchemy.orm import sessionmaker
+#インジェクション攻撃を再現するために追加
+from sqlalchemy.sql import text
 from .mymodels import Purchase, Product, PurchaseDetail, engine
 
 # セッションの作成
@@ -39,12 +41,31 @@ def create_purchase_detail(trd_id, prd_id, prd_code, prd_name, prd_price, quanti
     finally:
         session.close()
 
+
+# 意図的に脆弱なコード
 def get_product_by_code(code: str):
     session = SessionLocal()
     try:
-        return session.query(Product).filter(Product.code == code).first()
+        query = text(f"SELECT * FROM products WHERE code = '{code}'")
+        result = session.execute(query).first()
+        if result:
+            return {
+                "prd_id": result[0],  # タプルのインデックスを使用
+                "code": result[1],
+                "name": result[2],
+                "price": result[3]
+            }
+        return None
     finally:
         session.close()
+
+#元のコードを残します。
+#def get_product_by_code(code: str):
+#    session = SessionLocal()
+#    try:
+#        return session.query(Product).filter(Product.code == code).first()
+#    finally:
+#        session.close()
 
 def get_all_products():
     session = SessionLocal()
