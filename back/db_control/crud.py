@@ -42,7 +42,7 @@ def create_purchase_detail(trd_id, prd_id, prd_code, prd_name, prd_price, quanti
         session.close()
 
 
-# 意図的に脆弱なコード
+# 意図的に脆弱なコードを追加
 def get_product_by_code(code: str):
     session = SessionLocal()
     try:
@@ -56,6 +56,17 @@ def get_product_by_code(code: str):
                 "price": result[3]
             }
         return None
+    finally:
+        session.close()
+
+# 意図的に脆弱なコードを追加
+def update_product_price(code: str, new_price: float):
+    session = SessionLocal()
+    try:
+        # 脆弱なクエリの実行
+        query = text(f"UPDATE products SET price = {new_price} WHERE code = '{code}'")
+        session.execute(query)
+        session.commit()
     finally:
         session.close()
 

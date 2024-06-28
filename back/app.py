@@ -55,6 +55,17 @@ async def get_products() -> List[ProductModel]:
         raise HTTPException(status_code=404, detail="No products found")
     return products
 
+#意図的に脆弱なコードを追加
+@app.post("/update_price/")
+async def update_price(code: str, new_price: float):
+    logger.info(f"Updating price for product with code: {code} to {new_price}")
+    try:
+        update_product_price(code, new_price)
+        return {"message": "Price updated successfully"}
+    except Exception as e:
+        logger.error(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
 @app.post("/purchase/")
 async def create_purchase_endpoint(purchase_details: List[PurchaseDetailModel]):
     total_amount = sum(detail.prd_price * detail.quantity for detail in purchase_details)
